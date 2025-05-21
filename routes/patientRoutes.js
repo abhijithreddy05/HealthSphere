@@ -1,20 +1,30 @@
+
 // routes/patientRoutes.js
 import express from 'express';
 import { registerPatient, loginPatient, getPatientProfile } from '../controllers/patientController.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
 import { getPatientAppointments } from '../controllers/appointmentController.js';
-import { addHealthRecord, getHealthRecords, deleteHealthRecord } from '../controllers/healthRecordController.js'; // New controller
+import { addHealthRecord, getHealthRecords, deleteHealthRecord } from '../controllers/healthRecordController.js';
 import multer from 'multer';
 import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+
+// Create uploads directory dynamically
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const uploadDir = path.join(__dirname, '../Uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/'); // Store files in the 'uploads' directory
+    cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + path.extname(file.originalname)); // Generate a unique filename
+    cb(null, uniqueSuffix + path.extname(file.originalname));
   },
 });
 

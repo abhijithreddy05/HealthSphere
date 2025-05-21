@@ -2,11 +2,27 @@ import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// ES Module fix for __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Ensure necessary folders exist
+const paths = ['uploads', 'doctor_images'];
+paths.forEach(dir => {
+  const fullPath = path.join(__dirname, dir);
+  if (!fs.existsSync(fullPath)) {
+    fs.mkdirSync(fullPath);
+  }
+});
+
 import hospitalRoutes from './routes/hospitalRoutes.js';
 import doctorRoutes from './routes/doctorRoutes.js';
 import patientRoutes from './routes/patientRoutes.js';
 import appointmentRoutes from './routes/appointmentRoutes.js';
-import path from 'path';
 
 dotenv.config();
 
@@ -15,24 +31,22 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI, {
-  // useNewUrlParser: true,
-  // useUnifiedTopology: true,
-}).then(() => {
-  console.log('Connected to MongoDB');
-}).catch((err) => {
-  console.error('MongoDB connection error:', err);
-});
+// MongoDB Connection
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log('Connected to MongoDB'))
+  .catch(err => console.error('MongoDB connection error:', err));
 
-// Routes
-app.use('/uploads', express.static(path.join(path.resolve(), 'uploads')));
-app.use('/doctor_images', express.static(path.join(process.cwd(), 'doctor_images')));
-app.use('/hospitals', hospitalRoutes); // Updated base path to match frontend
+// Static File Serving
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/doctor_images', express.static(path.join(__dirname, 'doctor_images')));
+
+// API Routes
+app.use('/hospitals', hospitalRoutes);
 app.use('/doctors', doctorRoutes);
 app.use('/patients', patientRoutes);
 app.use('/appointments', appointmentRoutes);
 
+// Server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
