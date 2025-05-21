@@ -11,7 +11,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Ensure necessary folders exist
-const paths = ['uploads', 'doctor_images'];
+const paths = ['Uploads', 'doctor_images'];
 paths.forEach(dir => {
   const fullPath = path.join(__dirname, dir);
   if (!fs.existsSync(fullPath)) {
@@ -28,7 +28,8 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors());
+// Configure CORS to allow requests from Vercel frontend
+app.use(cors({ origin: 'https://health-sphere-frontend.vercel.app' }));
 app.use(express.json());
 
 // MongoDB Connection
@@ -37,7 +38,7 @@ mongoose.connect(process.env.MONGO_URI)
   .catch(err => console.error('MongoDB connection error:', err));
 
 // Static File Serving
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static(path.join(__dirname, 'Uploads')));
 app.use('/doctor_images', express.static(path.join(__dirname, 'doctor_images')));
 
 // API Routes
